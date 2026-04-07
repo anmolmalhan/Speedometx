@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Internet Speedometer",
+  title: "Speedometx",
   description: "A premium internet speed test web app",
 };
 
