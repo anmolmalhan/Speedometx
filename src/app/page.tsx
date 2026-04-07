@@ -1,65 +1,96 @@
-import Image from "next/image";
+"use client";
+
+import { useSpeedTest } from "@/hooks/useSpeedTest";
+import { SpeedometerDial } from "@/components/ui/SpeedometerDial";
+import { TestControls } from "@/components/speedtest/TestControls";
+import { MetricCard } from "@/components/speedtest/MetricCard";
+import { PhaseIndicator } from "@/components/speedtest/PhaseIndicator";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Globe } from "lucide-react";
 
 export default function Home() {
+  const { state, startTest, cancelTest } = useSpeedTest();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex flex-col items-center justify-between p-6 sm:p-12 font-[family-name:var(--font-geist-sans)]">
+      {/* Header */}
+      <header className="w-full max-w-4xl flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-2">
+          <Globe className="w-6 h-6 text-blue-500" />
+          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+            SPEEDOMETX
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <ThemeToggle />
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 w-full max-w-4xl flex flex-col items-center justify-center">
+        
+        {/* Speedometer Area */}
+        <div className="mb-8 w-full">
+          <SpeedometerDial 
+            currentValue={state.currentValue} 
+            phase={state.phase} 
+            progress={state.progress}
+          />
+        </div>
+
+        {/* Phase Timeline / Info */}
+        <div className="min-h-16 mb-6 w-full flex flex-col items-center justify-center">
+          <PhaseIndicator phase={state.phase} />
+          {state.error && (
+             <div className="text-red-500 text-sm mt-2">{state.error}</div>
+          )}
+          {state.server && (state.phase !== 'idle' && state.phase !== 'selectingServer') && (
+            <div className="text-xs text-slate-400 mt-2">
+              Server: {state.server.name} ({state.server.region})
+            </div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="mb-12">
+          <TestControls 
+            phase={state.phase} 
+            onStart={startTest} 
+            onCancel={cancelTest} 
+          />
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricCard 
+            label="Ping" 
+            value={state.ping} 
+            unit="ms" 
+            isActive={state.phase === "testingPing"}
+          />
+          <MetricCard 
+            label="Jitter" 
+            value={state.jitter} 
+            unit="ms" 
+            isActive={state.phase === "testingPing"}
+          />
+          <MetricCard 
+            label="Download" 
+            value={state.download} 
+            unit="Mbps" 
+            isActive={state.phase === "testingDownload"}
+          />
+          <MetricCard 
+            label="Upload" 
+            value={state.upload} 
+            unit="Mbps" 
+            isActive={state.phase === "testingUpload"}
+          />
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-12 text-center text-sm text-slate-500 dark:text-slate-400">
+        Results may vary based on connection type. Created with Next.js & Framer Motion.
+      </footer>
     </div>
   );
 }
