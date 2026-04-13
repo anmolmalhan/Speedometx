@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   ),
   title: "Speedometx",
   description: "A premium internet speed test web app",
+  authors: [{ name: "anmolmalhan" }],
   openGraph: {
     title: "Speedometx",
     description: "A premium internet speed test web app",

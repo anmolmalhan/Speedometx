@@ -88,8 +88,21 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 text-center text-sm text-slate-500 dark:text-slate-400">
-        Results may vary based on connection type. Created with Next.js & Framer Motion.
+      <footer className="mt-12 flex flex-col items-center justify-center space-y-2 text-center text-sm text-slate-500 dark:text-slate-400 pb-8">
+        <p>Results may vary based on connection type.</p>
+        <p className="font-medium mt-1 flex items-center justify-center gap-1">
+          Crafted with <span className="text-blue-500 dark:text-blue-400">⚡</span> and precision by
+          <a 
+            href="https://www.instagram.com/anmolmalhan" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-block hover:scale-105 hover:-translate-y-0.5 transition-all duration-200 ml-1"
+          >
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 font-bold tracking-wide">
+              anmolmalhan
+            </span>
+          </a>
+        </p>
       </footer>
     </div>
   );
