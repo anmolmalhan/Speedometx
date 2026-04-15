@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   let size = parseInt(sizeStr, 10);
   
   if (isNaN(size) || size <= 0) size = 1024 * 1024;
-  if (size > 100 * 1024 * 1024) size = 100 * 1024 * 1024; // Cap at 100MB
+  if (size > 1000 * 1024 * 1024) size = 1000 * 1024 * 1024; // Cap at 1000MB
   
   const stream = new ReadableStream({
     start(controller) {

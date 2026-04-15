@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { useSpeedTest } from "@/hooks/useSpeedTest";
 import { SpeedometerDial } from "@/components/ui/SpeedometerDial";
 import { TestControls } from "@/components/speedtest/TestControls";
@@ -7,12 +9,55 @@ import { MetricCard } from "@/components/speedtest/MetricCard";
 import { PhaseIndicator } from "@/components/speedtest/PhaseIndicator";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Globe } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const { state, startTest, cancelTest } = useSpeedTest();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between p-6 sm:p-12 font-[family-name:var(--font-geist-sans)]">
+    <>
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex flex-col items-center text-center"
+            >
+              <div className="flex items-center space-x-3 mb-4">
+                <Globe className="w-12 h-12 text-blue-500" />
+                <h1 className="text-4xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
+                  SPEEDOMETX
+                </h1>
+              </div>
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="text-lg font-medium text-slate-500 dark:text-slate-400"
+              >
+                Precision Engineered for Speed.
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen flex flex-col items-center justify-between p-6 sm:p-12 font-[family-name:var(--font-geist-sans)]">
       {/* Header */}
       <header className="w-full max-w-4xl flex items-center justify-between mb-8">
         <div className="flex items-center space-x-2">
@@ -105,5 +150,6 @@ export default function Home() {
         </p>
       </footer>
     </div>
+    </>
   );
 }

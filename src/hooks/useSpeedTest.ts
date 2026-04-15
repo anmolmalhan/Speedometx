@@ -85,82 +85,118 @@ export function useSpeedTest() {
 
       // Run download test for 8 seconds
       const downloadDuration = 8000;
-      const downloadStart = performance.now();
       let totalBytesDown = 0;
-      let lastReportTime = downloadStart;
+      let actualDownloadStart = 0;
+      let lastReportTime = 0;
+      const initialFetchStart = performance.now();
       
-      let isDownloadComplete = false;
-      
-      while (!isDownloadComplete && !cancelRef.current) {
-        const now = performance.now();
-        if (now - downloadStart >= downloadDuration) {
-           isDownloadComplete = true;
-           break;
-        }
-
-        // Request 25MB chunk from Cloudflare public speed test endpoint
-        const res = await fetch('https://speed.cloudflare.com/__down?bytes=26214400', { cache: 'no-store' });
+      try {
+        // Request massive 250MB chunk from actual internet to test WAN speed
+        const res = await fetch('https://speed.cloudflare.com/__down?bytes=262144000', { cache: 'no-store' });
         const reader = res.body?.getReader();
-        if (!reader) break;
+        
+        if (reader) {
+          while (!cancelRef.current) {
+            const timeNow = performance.now();
+            if (actualDownloadStart > 0 && timeNow - actualDownloadStart >= downloadDuration) {
+               reader.cancel();
+               break;
+            }
+            if (actualDownloadStart === 0 && timeNow - initialFetchStart >= downloadDuration) {
+               reader.cancel();
+               break;
+            }
 
-        while (true) {
-          if (cancelRef.current) break;
-          const { done, value } = await reader.read();
-          if (done) break;
-          totalBytesDown += value.length;
-          
-          const timeNow = performance.now();
-          if (timeNow - lastReportTime > 100) { // report every 100ms
-            const durationSec = (timeNow - downloadStart) / 1000;
-            const mbps = (totalBytesDown * 8) / (1000 * 1000) / durationSec;
-            updateState({ 
-              download: mbps, 
-              currentValue: mbps,
-              progress: Math.min(((timeNow - downloadStart) / downloadDuration) * 100, 100)
-            });
-            lastReportTime = timeNow;
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            if (totalBytesDown === 0) {
+               actualDownloadStart = performance.now();
+               lastReportTime = actualDownloadStart;
+            }
+            
+            totalBytesDown += value.length;
+            
+            const timeSinceReport = performance.now() - lastReportTime;
+            if (actualDownloadStart > 0 && timeSinceReport > 100) { 
+              const durationSec = (performance.now() - actualDownloadStart) / 1000;
+              if (durationSec > 0) {
+                 const mbps = (totalBytesDown * 8) / 1000000 / durationSec;
+                 updateState({ 
+                   download: mbps, 
+                   currentValue: mbps,
+                   progress: Math.min(((performance.now() - actualDownloadStart) / downloadDuration) * 100, 100)
+                 });
+                 lastReportTime = performance.now();
+              }
+            }
           }
         }
-      }
+      } catch (err) {}
 
       // 4. Testing Upload
       if (cancelRef.current) return;
       updateState({ phase: 'testingUpload', progress: 0, currentValue: 0 });
 
       const uploadDuration = 8000;
-      const uploadStart = performance.now();
       let totalBytesUp = 0;
+      const uploadStart = performance.now();
       let lastUpReportTime = uploadStart;
       
-      let isUploadComplete = false;
-      const uploadChunkSize = 1048576; // 1MB chunk
+      const uploadChunkSize = 2 * 1024 * 1024; // 2MB chunks for parallel streams
       const dummyData = new Uint8Array(uploadChunkSize);
       for(let i=0; i<uploadChunkSize; i++) dummyData[i] = Math.floor(Math.random() * 256);
+      const dummyBlob = new Blob([dummyData], { type: 'text/plain' });
+      
+      const concurrency = 6;
+      let isUploading = true;
+      const abortController = new AbortController();
 
-      while (!isUploadComplete && !cancelRef.current) {
-        const now = performance.now();
-        if (now - uploadStart >= uploadDuration) {
-           isUploadComplete = true;
-           break;
-        }
-        
-        await fetch('https://speed.cloudflare.com/__up', {
-          method: 'POST',
-          body: dummyData,
-        });
-        
-        totalBytesUp += uploadChunkSize;
-        const timeNow = performance.now();
-        if (timeNow - lastUpReportTime > 100) {
-          const durationSec = (timeNow - uploadStart) / 1000;
-          const mbps = (totalBytesUp * 8) / (1000 * 1000) / durationSec;
-          updateState({ 
-            upload: mbps, 
-            currentValue: mbps,
-            progress: Math.min(((timeNow - uploadStart) / uploadDuration) * 100, 100)
-          });
-          lastUpReportTime = timeNow;
-        }
+      const uploadWorker = async () => {
+         while (isUploading && !cancelRef.current) {
+            try {
+               await fetch('https://speed.cloudflare.com/__up', {
+                  method: 'POST',
+                  body: dummyBlob,
+                  cache: 'no-store',
+                  signal: abortController.signal
+               });
+               if (isUploading && !cancelRef.current) {
+                  totalBytesUp += uploadChunkSize;
+               }
+            } catch(e) {
+               // Ignore aborts
+            }
+         }
+      };
+
+      for(let i=0; i<concurrency; i++) {
+         uploadWorker();
+      }
+      
+      while (!cancelRef.current) {
+         const timeNow = performance.now();
+         const durationSec = (timeNow - uploadStart) / 1000;
+         
+         if (durationSec >= (uploadDuration / 1000)) {
+            isUploading = false;
+            abortController.abort();
+            break;
+         }
+         
+         if (timeNow - lastUpReportTime > 100) {
+            if (durationSec > 0.5) { // Warm-up phase
+                const mbps = (totalBytesUp * 8) / 1000000 / durationSec;
+                updateState({ 
+                  upload: mbps, 
+                  currentValue: mbps,
+                  progress: Math.min((durationSec / (uploadDuration / 1000)) * 100, 100)
+                });
+            }
+            lastUpReportTime = timeNow;
+         }
+         
+         await new Promise(res => setTimeout(res, 50));
       }
 
       if (cancelRef.current) return;
