@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { SpeedTestState, Server, TestPhase } from '../types';
+import { SpeedTestState, Server } from '../types';
 
 const INITIAL_STATE: SpeedTestState = {
   phase: 'idle',
@@ -40,8 +40,8 @@ export function useSpeedTest() {
         
         if (city && country) regionStr = `${city}, ${country}`;
         if (colo) serverName = `Cloudflare (${colo})`;
-      } catch (e) {
-        // Fallback defaults
+      } catch {
+        // Cloudflare meta lookup failed — keep the fallback server/region defaults.
       }
       
       const server = { id: "cf-edge", name: serverName, region: regionStr } as Server;
@@ -132,7 +132,9 @@ export function useSpeedTest() {
             }
           }
         }
-      } catch (err) {}
+      } catch {
+        // Download stream errored/aborted — fall through to the upload phase.
+      }
 
       // 4. Testing Upload
       if (cancelRef.current) return;
@@ -164,8 +166,8 @@ export function useSpeedTest() {
                if (isUploading && !cancelRef.current) {
                   totalBytesUp += uploadChunkSize;
                }
-            } catch(e) {
-               // Ignore aborts
+            } catch {
+               // Ignore aborts/errors on individual upload requests.
             }
          }
       };
@@ -202,9 +204,10 @@ export function useSpeedTest() {
       if (cancelRef.current) return;
       updateState({ phase: 'complete', progress: 100 });
 
-    } catch (err: any) {
+    } catch (err) {
       if (!cancelRef.current) {
-        updateState({ phase: 'error', error: err.message || 'An error occurred' });
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        updateState({ phase: 'error', error: message });
       }
     }
   }, []);

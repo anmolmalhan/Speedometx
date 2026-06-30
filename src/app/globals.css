@@ -10,20 +10,8 @@
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
 
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -31,70 +19,56 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 240 33% 98%;
+    --foreground: 240 30% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 30% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 265 89% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --muted: 240 20% 96%;
+    --muted-foreground: 240 10% 45%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --border: 240 20% 90%;
+    --input: 240 20% 90%;
+    --ring: 265 89% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --radius: 1.25rem;
+    --primary-rgb: 147, 51, 234;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-
-    --radius: 1rem;
-    --primary-rgb: 59, 130, 246;
+    /* vibrant pops used by the gauge + accents */
+    --pop-violet: 265 90% 62%;
+    --pop-cyan: 190 95% 52%;
+    --pop-fuchsia: 322 90% 60%;
+    --pop-amber: 32 96% 56%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 250 30% 6%;
+    --foreground: 240 33% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 250 25% 11%;
+    --card-foreground: 240 33% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --primary: 265 90% 66%;
+    --primary-foreground: 0 0% 100%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --muted: 250 20% 16%;
+    --muted-foreground: 240 12% 65%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --border: 250 20% 18%;
+    --input: 250 20% 18%;
+    --ring: 265 90% 66%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --primary-rgb: 168, 85, 247;
   }
 }
 
@@ -103,6 +77,191 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
+  }
+}
+
+/* ===========================================================
+   Bold Mesh Gradient theme
+   =========================================================== */
+
+/* Full-screen animated vibrant mesh that sits behind everything */
+/* Flat base — the animated <BackgroundOrbs> provide the moving colour */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background-color: #eceefa;
+}
+.dark .mesh-bg {
+  background-color: #07060f;
+}
+
+/* Animated gradient + shine for the primary CTA */
+.mesh-btn {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(
+    115deg,
+    hsl(265 90% 60%),
+    hsl(322 90% 58%) 35%,
+    hsl(190 95% 50%) 70%,
+    hsl(265 90% 60%)
+  );
+  background-size: 220% 100%;
+  box-shadow: 0 10px 40px hsla(300, 90%, 55%, 0.45);
+  animation: btnGradient 5s linear infinite;
+}
+.mesh-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, hsla(0, 0%, 100%, 0.35) 50%, transparent 65%);
+  background-size: 250% 100%;
+  animation: btnShine 3.6s ease-in-out infinite;
+}
+@keyframes btnGradient {
+  to { background-position: 220% 0; }
+}
+@keyframes btnShine {
+  0% { background-position: 180% 0; }
+  55%, 100% { background-position: -120% 0; }
+}
+
+/* Flowing energy dashes that travel around the gauge arc while testing */
+.arc-flow {
+  animation: arcFlow 0.9s linear infinite;
+}
+@keyframes arcFlow {
+  to { stroke-dashoffset: -16; }
+}
+
+/* Slowly panning dot-grid layer */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -7;
+  pointer-events: none;
+  color: rgba(120, 120, 170, 0.12);
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 34px 34px;
+  animation: gridPan 26s linear infinite;
+  -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 28%, transparent 74%);
+  mask-image: radial-gradient(circle at 50% 38%, #000 28%, transparent 74%);
+}
+.dark .grid-overlay {
+  color: rgba(180, 180, 255, 0.08);
+}
+@keyframes gridPan {
+  to { background-position: 34px 34px; }
+}
+
+/* A soft scanline that sweeps top-to-bottom */
+.scanline {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 26vh;
+  z-index: -7;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, hsla(282, 90%, 65%, 0.06), transparent);
+  animation: scanSweep 8s ease-in-out infinite;
+}
+@keyframes scanSweep {
+  0% { transform: translateY(-30vh); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(120vh); opacity: 0; }
+}
+
+/* Animated gradient underline for links */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, hsl(265 90% 62%), hsl(322 90% 60%), hsl(190 95% 52%), hsl(265 90% 62%));
+  background-size: 200% 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+  animation: underlineFlow 3s linear infinite;
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+@keyframes underlineFlow {
+  to { background-position: 200% 0; }
+}
+
+/* Hue-cycling gauge arc */
+.arc-hue {
+  animation: hueShift 9s linear infinite;
+}
+@keyframes hueShift {
+  to { filter: hue-rotate(360deg); }
+}
+
+/* Bold display font helper */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Vibrant clipped-text gradient for headings + hero numbers */
+.text-mesh {
+  background-image: linear-gradient(
+    115deg,
+    hsl(var(--pop-violet)),
+    hsl(var(--pop-fuchsia)) 40%,
+    hsl(var(--pop-cyan)) 70%,
+    hsl(var(--pop-violet))
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShimmer 6s linear infinite;
+}
+@keyframes textShimmer {
+  to { background-position: 250% 0; }
+}
+
+/* High-contrast frosted card */
+.glass-card {
+  background: hsla(0, 0%, 100%, 0.6);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid hsla(0, 0%, 100%, 0.7);
+  box-shadow: 0 8px 32px hsla(265, 60%, 40%, 0.10);
+}
+.dark .glass-card {
+  background: hsla(250, 25%, 12%, 0.55);
+  border: 1px solid hsla(0, 0%, 100%, 0.08);
+  box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Neutralise all CSS-driven loops/transitions for motion-sensitive users */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Purely decorative moving layers: hide entirely */
+  .scanline {
+    display: none !important;
+  }
+  .grid-overlay {
+    animation: none !important;
   }
 }

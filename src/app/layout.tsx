@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BackgroundOrbs } from "@/components/ui/BackgroundOrbs";
+import { CursorSpotlight } from "@/components/ui/CursorSpotlight";
+import { AmbientParticles } from "@/components/ui/AmbientParticles";
+import { MotionConfig } from "framer-motion";
 import { Analytics } from "@vercel/analytics/react";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-space-grotesk",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -42,10 +51,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-          <Analytics />
+      <body className={`${inter.variable} ${spaceGrotesk.variable} ${inter.className} antialiased text-foreground`}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <MotionConfig reducedMotion="user">
+            {/* Animated vibrant mesh background */}
+            <div className="mesh-bg" aria-hidden="true" />
+            <div className="grid-overlay" aria-hidden="true" />
+            <div className="scanline" aria-hidden="true" />
+            <BackgroundOrbs />
+            <AmbientParticles />
+            <CursorSpotlight />
+            {children}
+            <Analytics />
+          </MotionConfig>
         </ThemeProvider>
       </body>
     </html>

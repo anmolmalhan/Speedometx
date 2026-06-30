@@ -8,17 +8,26 @@ import { TestControls } from "@/components/speedtest/TestControls";
 import { MetricCard } from "@/components/speedtest/MetricCard";
 import { PhaseIndicator } from "@/components/speedtest/PhaseIndicator";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Globe } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatedWordmark } from "@/components/ui/AnimatedWordmark";
+import { Magnetic } from "@/components/ui/Magnetic";
+import { Zap } from "lucide-react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
+
+const container: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.14, delayChildren: 1.9 } },
+};
+const item: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.35, duration: 0.8 } },
+};
 
 export default function Home() {
   const { state, startTest, cancelTest } = useSpeedTest();
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2000);
+    const timer = setTimeout(() => setShowSplash(false), 1800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -28,128 +37,106 @@ export default function Home() {
         {showSplash && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900"
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ type: "spring", bounce: 0.4, duration: 0.7 }}
               className="flex flex-col items-center text-center"
             >
-              <div className="flex items-center space-x-3 mb-4">
-                <Globe className="w-12 h-12 text-blue-500" />
-                <h1 className="text-4xl sm:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tracking-tight">
-                  SPEEDOMETX
-                </h1>
+              <div className="mb-5 flex items-center gap-3">
+                <motion.div
+                  animate={{ rotate: [0, -14, 14, 0], scale: [1, 1.15, 1] }}
+                  transition={{ duration: 1.1, repeat: Infinity, repeatDelay: 0.3 }}
+                >
+                  <Zap className="h-12 w-12 fill-fuchsia-500 text-fuchsia-500" />
+                </motion.div>
+                <AnimatedWordmark animateIn className="text-5xl sm:text-7xl" />
               </div>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="text-lg font-medium text-slate-500 dark:text-slate-400"
+                transition={{ delay: 0.4 }}
+                className="text-base font-semibold uppercase tracking-[0.3em] text-muted-foreground"
               >
-                Precision Engineered for Speed.
+                Precision engineered for speed
               </motion.p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen flex flex-col items-center justify-between p-6 sm:p-12 font-[family-name:var(--font-geist-sans)]">
-      {/* Header */}
-      <header className="w-full max-w-4xl flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-2">
-          <Globe className="w-6 h-6 text-blue-500" />
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-            SPEEDOMETX
-          </h1>
-        </div>
-        <ThemeToggle />
-      </header>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="flex min-h-screen flex-col items-center justify-between p-6 sm:p-10"
+      >
+        {/* Header */}
+        <motion.header variants={item} className="flex w-full max-w-4xl items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap className="h-6 w-6 fill-fuchsia-500 text-fuchsia-500" />
+            <AnimatedWordmark className="text-xl" />
+          </div>
+          <ThemeToggle />
+        </motion.header>
 
-      {/* Main Content */}
-      <main className="flex-1 w-full max-w-4xl flex flex-col items-center justify-center">
-        
-        {/* Speedometer Area */}
-        <div className="mb-8 w-full">
-          <SpeedometerDial 
-            currentValue={state.currentValue} 
-            phase={state.phase} 
-            progress={state.progress}
-          />
-        </div>
+        {/* Main */}
+        <main className="flex w-full max-w-4xl flex-1 flex-col items-center justify-center py-8">
+          <motion.div variants={item}>
+            <SpeedometerDial
+              currentValue={state.phase === "complete" ? state.download : state.currentValue}
+              phase={state.phase}
+              progress={state.phase === "complete" ? 100 : state.progress}
+            />
+          </motion.div>
 
-        {/* Phase Timeline / Info */}
-        <div className="min-h-16 mb-6 w-full flex flex-col items-center justify-center">
-          <PhaseIndicator phase={state.phase} />
-          {state.error && (
-             <div className="text-red-500 text-sm mt-2">{state.error}</div>
-          )}
-          {state.server && (state.phase !== 'idle' && state.phase !== 'selectingServer') && (
-            <div className="text-xs text-slate-400 mt-2">
-              Server: {state.server.name} ({state.server.region})
-            </div>
-          )}
-        </div>
+          {/* Phase + server */}
+          <motion.div variants={item} className="my-6 flex min-h-14 flex-col items-center justify-center gap-1.5">
+            <PhaseIndicator phase={state.phase} />
+            {state.error && <p className="text-sm font-medium text-red-500">{state.error}</p>}
+            {state.server && state.phase !== "idle" && state.phase !== "selectingServer" && (
+              <p className="text-xs font-medium text-muted-foreground">
+                {state.server.name} · {state.server.region}
+              </p>
+            )}
+          </motion.div>
 
-        {/* Controls */}
-        <div className="mb-12">
-          <TestControls 
-            phase={state.phase} 
-            onStart={startTest} 
-            onCancel={cancelTest} 
-          />
-        </div>
+          {/* Controls */}
+          <motion.div variants={item} className="mb-10">
+            <Magnetic>
+              <TestControls phase={state.phase} onStart={startTest} onCancel={cancelTest} />
+            </Magnetic>
+          </motion.div>
 
-        {/* Metrics Grid */}
-        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard 
-            label="Ping" 
-            value={state.ping} 
-            unit="ms" 
-            isActive={state.phase === "testingPing"}
-          />
-          <MetricCard 
-            label="Jitter" 
-            value={state.jitter} 
-            unit="ms" 
-            isActive={state.phase === "testingPing"}
-          />
-          <MetricCard 
-            label="Download" 
-            value={state.download} 
-            unit="Mbps" 
-            isActive={state.phase === "testingDownload"}
-          />
-          <MetricCard 
-            label="Upload" 
-            value={state.upload} 
-            unit="Mbps" 
-            isActive={state.phase === "testingUpload"}
-          />
-        </div>
-      </main>
+          {/* Metrics */}
+          <motion.div variants={item} className="grid w-full grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+            <MetricCard label="Ping" value={state.ping} unit="ms" accent="190 95% 52%" isActive={state.phase === "testingPing"} />
+            <MetricCard label="Jitter" value={state.jitter} unit="ms" accent="190 95% 52%" isActive={state.phase === "testingPing"} />
+            <MetricCard label="Download" value={state.download} unit="Mbps" accent="265 90% 62%" isActive={state.phase === "testingDownload"} />
+            <MetricCard label="Upload" value={state.upload} unit="Mbps" accent="322 90% 60%" isActive={state.phase === "testingUpload"} />
+          </motion.div>
+        </main>
 
-      {/* Footer */}
-      <footer className="mt-12 flex flex-col items-center justify-center space-y-2 text-center text-sm text-slate-500 dark:text-slate-400 pb-8">
-        <p>Results may vary based on connection type.</p>
-        <p className="font-medium mt-1 flex items-center justify-center gap-1">
-          Crafted with <span className="text-blue-500 dark:text-blue-400">⚡</span> and precision by
-          <a 
-            href="https://www.instagram.com/anmolmalhan" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-block hover:scale-105 hover:-translate-y-0.5 transition-all duration-200 ml-1"
-          >
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 font-bold tracking-wide">
-              anmolmalhan
-            </span>
-          </a>
-        </p>
-      </footer>
-    </div>
+        {/* Footer */}
+        <motion.footer variants={item} className="flex flex-col items-center gap-1 pt-8 text-center text-sm text-muted-foreground">
+          <p>Results may vary based on connection type.</p>
+          <p className="flex items-center justify-center gap-1 font-medium">
+            Crafted with <span className="text-fuchsia-500">⚡</span> by
+            <a
+              href="https://www.instagram.com/anmolmalhan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-underline ml-1 inline-block transition-transform hover:-translate-y-0.5 hover:scale-105"
+            >
+              <span className="text-mesh font-display font-bold tracking-wide">anmolmalhan</span>
+            </a>
+          </p>
+        </motion.footer>
+      </motion.div>
     </>
   );
 }

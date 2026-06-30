@@ -1,28 +1,36 @@
 "use client";
 
 import { TestPhase } from "../../types";
+import { ScrambleText } from "../ui/ScrambleText";
 
 const phaseLabels: Record<TestPhase, string> = {
-  idle: "Ready",
-  selectingServer: "Finding Optimal Server...",
-  testingPing: "Measuring Ping & Jitter...",
-  testingDownload: "Testing Download Speed...",
-  testingUpload: "Testing Upload Speed...",
-  complete: "Test Complete",
-  error: "Test Failed",
+  idle: "Ready when you are",
+  selectingServer: "Finding optimal server…",
+  testingPing: "Measuring ping & jitter…",
+  testingDownload: "Testing download speed…",
+  testingUpload: "Testing upload speed…",
+  complete: "Test complete",
+  error: "Test failed",
 };
 
 export function PhaseIndicator({ phase }: { phase: TestPhase }) {
   const isTesting = phase.includes("testing") || phase === "selectingServer";
-  
+
   return (
-    <div className="flex items-center justify-center space-x-2 my-4">
+    <div className="flex items-center justify-center gap-2">
       {isTesting && (
-        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-500 opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" />
+        </span>
       )}
-      <span className={`text-sm font-medium transition-colors ${phase === 'error' ? 'text-red-500' : 'text-slate-500 dark:text-slate-400'}`}>
-        {phaseLabels[phase]}
-      </span>
+      <ScrambleText
+        key={phase}
+        text={phaseLabels[phase]}
+        className={`text-sm font-semibold tracking-wide transition-colors ${
+          phase === "error" ? "text-red-500" : "text-muted-foreground"
+        }`}
+      />
     </div>
   );
 }
